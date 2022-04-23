@@ -29,5 +29,6 @@
     }
   ],
   "esmodules": ["scripts/main.js"],
-  "styles": ["styles/main.css"]
+  "styles": ["styles/main.css"],
+  "templates": ["templates/main.html"]
 }
