@@ -1,6 +1,10 @@
-import ActorSheet5eNPC from "../../../../systems/dnd5e/module/actor/sheets/npc.js";
+// import ActorSheet5eNPC from "../../../../systems/dnd5e/module/actor/sheets/npc.js";
+import { Logger } from "./log.js";
 
-export class SimpleLootSheet extends ActorSheet5eNPC {
+const logger = new Logger("loot-sheet.js");
+// logger.disable();
+
+export class SimpleLootSheet extends ActorSheet {
   static get defaultOptions() {
     return mergeObject(super.defaultOptions, {
       classes: ["dnd5e", "sheet", "actor", "npc"],
@@ -11,7 +15,12 @@ export class SimpleLootSheet extends ActorSheet5eNPC {
     return "modules/simple-lootsheet-5e/templates/loot-sheet.html";
   }
 
-  getData(options) {
-    return super.getData(options);
-  }
+  // async getData(options) {
+  //   return super.getData(options);
+  // }
+
+  // render(force = false, options = {}) {
+  //   logger.logConsole("force", force, "options", options);
+  //   super.render(force, options);
+  // }
 }
