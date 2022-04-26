@@ -12,7 +12,7 @@ export class SimpleLootSheet extends ActorSheet {
   }
 
   get template() {
-    return "modules/simple-lootsheet-5e/templates/loot-sheet.html";
+    return "modules/simple-lootsheet-5e/templates/loot-sheet.hbs";
   }
 
   // async getData(options) {

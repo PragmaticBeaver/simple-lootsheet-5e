@@ -1,6 +1,15 @@
 <form class="{{cssClass}} flexcol" autocomplete="off">
   <!-- Sheet Header -->
   <header class="sheet-header">
+    <img
+      class="profile-img"
+      src="{{actor.img}}"
+      data-edit="img"
+      title="{{actor.name}}"
+      height="100"
+      width="100"
+    />
+    <h1>{{actor.name}}</h1>
     <!-- Header stuff goes here -->
     <!-- <img
       class="profile-img"
@@ -31,7 +40,14 @@
   </nav> -->
 
   <!-- Sheet Body -->
-  <section class="sheet-body">{{!-- Tab content goes here --}}</section>
+  <section class="sheet-body">
+    <p>{{actor.items.size}}</p>
+    <ul>
+      {{#each actor.items as |item itemId|}}
+        <li>{{item.name}} {{itemId}}</li>
+      {{/each}}
+    </ul>
+  </section>
 
   <!-- Sheet Footer -->
   <footer class="sheet-footer"></footer>
