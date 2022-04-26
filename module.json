@@ -29,6 +29,5 @@
     }
   ],
   "esmodules": ["scripts/main.js"],
-  "styles": ["styles/main.css"],
-  "templates": ["templates/loot-sheet.html"]
+  "styles": ["styles/main.css"]
 }
