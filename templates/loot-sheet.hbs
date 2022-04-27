@@ -42,11 +42,21 @@
   <!-- Sheet Body -->
   <section class="sheet-body">
     <p>{{actor.items.size}}</p>
-    <ul>
+    <ol class="items-list">
       {{#each actor.items as |item itemId|}}
-        <li>{{item.name}} {{itemId}}</li>
+        <li class="item flexrow" draggable="true">
+          <div class="item-name flexrow rollable">
+            <div
+              class="item-image"
+              role="button"
+              aria-label="{{item.name}}"
+              style="background-image: url('{{item.img}}')"
+            ></div>
+            <h4>{{item.name}}</h4>
+          </div>
+        </li>
       {{/each}}
-    </ul>
+    </ol>
   </section>
 
   <!-- Sheet Footer -->
