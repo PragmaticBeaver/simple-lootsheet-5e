@@ -41,7 +41,7 @@
 
   <!-- Sheet Body -->
   <section class="sheet-body">
-    <p>{{actor.items.size}}</p>
+    <h2>Content</h2>
     <ol class="items-list">
       {{#each actor.items as |item itemId|}}
         <li class="item flexrow" draggable="true">
@@ -53,12 +53,34 @@
               style="background-image: url('{{item.img}}')"
             ></div>
             <h4>{{item.name}}</h4>
+            <a  class="config-button sls-btn"
+                title="Loot"
+                data-eventType="loot"
+                data-itemId={{itemId}}>
+                <i class="fas fa-box"></i>
+            </a>
+            <a  class="config-button sls-btn"
+                title="Loot All"
+                data-eventType="lootAll"
+                data-itemId={{itemId}}>
+                <i class="fas fa-boxes"></i>
+            </a>
+            <a  class="config-button sls-btn"
+                title="Remove"
+                data-eventType="remove"
+                data-itemId={{itemId}}>
+                <i class="fas fa-trash"></i>
+            </a>
           </div>
         </li>
       {{/each}}
     </ol>
+    </br>
+    <h3>Contains {{actor.items.size}} items.</h3>
   </section>
 
   <!-- Sheet Footer -->
-  <footer class="sheet-footer"></footer>
+  <footer class="sheet-footer">
+    <button>Loot all</button>
+  </footer>
 </form>
