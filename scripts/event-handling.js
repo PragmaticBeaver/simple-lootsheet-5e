@@ -4,7 +4,7 @@ import { EVENT } from "./constants.js";
 const logger = new Logger("loot-sheet.js");
 // logger.disable();
 
-export function handleEvent(eventType, eventOrigin, eventData) {
+export async function handleEvent(eventType, eventOrigin, eventData) {
   logger.logConsole("hanldeEvent", {
     eventType,
     eventOrigin,
@@ -54,37 +54,7 @@ export function handleEvent(eventType, eventOrigin, eventData) {
         lootableItems
       );
       logger.logWarn("changes", originChanges, targetChanges);
-      /**
-       * todo - research lootAll
-       *
-       * Gather valid items to loot
-       * 1. gather eventOrigin (actor) and eventTarget (actor)
-       * 2. gather all Items from eventOrigin
-       * 3. loop over items => filter by "item.type == 'equipment'"
-       * 4. unequip every item => item.data.equipped = false
-       *
-       * Move items from eventOrigin to eventTarget
-       * 1. gather item from eventOrigin => const sourceItem = source.getEmbeddedDocument("Item", item.id)
-       * 2. gather item from eventTarget => 
-                    targetItem = destination.getEmbeddedCollection('Item').find(i =>
-                    sourceItem.name === i.name
-                    && sourceItem.data.data.price === i.data.data.price
-                    && sourceItem.data.data.weight === i.data.data.weight
-                );
-       * 3. eventTarget contains item already?
-       * 3-1. YES => update eventTarget quantity => let targetUpdate = { _id: targetItem.id, data: { quantity: parseInt(targetItem.data.data.quantity + quantity) } };
-       * 3-2. NO => duplicate eventOrigin item and save temporary =>
-                newItem = duplicate(sourceItem);
-                newItem.data.quantity = parseInt(quantity);
-                newItem.data.equipped = false;
-       * 4. check if item from eventOrigin has to be deleted (quantity < 1) => add to deletion queue
-       *
-       * use queues to update actors
-       * 1. loop over each queue and update actors according to the type of queue
-       * 2. new Items => return actor.createEmbeddedDocuments("Item", items.data);
-       * 3. remove Items => return actor.deleteEmbeddedDocuments("Item", items.data);
-       * 4. updated Items => return actor.updateEmbeddedDocuments("Item", updatedItems);
-       */
+      await updateItems(eventOrigin, eventTarget, originChanges, targetChanges);
       break;
     case EVENT.remove:
       break;
@@ -153,4 +123,35 @@ function transferItems(origin, target, items) {
   }
 
   return { originChanges, targetChanges };
+}
+
+async function updateItems(
+  eventOrigin,
+  eventTarget,
+  originChanges,
+  targetChanges
+) {
+  // eventOrigin update
+  const originUpdates = originChanges.updatedItems;
+  if (originUpdates.length > 0) {
+    await eventOrigin.updateEmbeddedDocuments("Item", originUpdates);
+  }
+
+  // eventOrigin remove
+  const originRemoves = originChanges.removedItems;
+  if (originRemoves.length > 0) {
+    await eventOrigin.deleteEmbeddedDocuments("Item", originRemoves);
+  }
+
+  // eventTarget update
+  const targetUpdates = targetChanges.updatedItems;
+  if (targetUpdates.length > 0) {
+    await eventTarget.updateEmbeddedDocuments("Item", targetUpdates);
+  }
+
+  // eventTarget create
+  const targetCreations = targetChanges.addedItems;
+  if (targetCreations.length > 0) {
+    await eventTarget.createEmbeddedDocuments("Item", targetCreations);
+  }
 }

@@ -42,13 +42,13 @@ export class SimpleLootSheet extends ActorSheet {
     // register button onclick events
     const buttons = app.querySelectorAll(".sls-btn");
     for (const btn of buttons) {
-      btn.onclick = (event) => {
+      btn.onclick = async (event) => {
         const { eventtype: eventType, itemid: itemId } =
           event.currentTarget.dataset;
         // gather global itemId
         const itemKeys = Array.from(this.actor.data.items.keys());
         const item = this.actor.data.items.get(itemKeys[itemId]);
-        handleEvent(eventType, this.actor, item.id);
+        await handleEvent(eventType, this.actor, item.id);
       };
     }
   }
