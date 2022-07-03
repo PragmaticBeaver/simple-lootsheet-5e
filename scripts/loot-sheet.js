@@ -3,7 +3,7 @@ import { Logger } from "./log.js";
 import { handleEvent } from "./event-handling.js";
 
 const logger = new Logger("loot-sheet.js");
-logger.disable();
+// logger.disable();
 
 export class SimpleLootSheet extends ActorSheet {
   static get defaultOptions() {
@@ -22,6 +22,13 @@ export class SimpleLootSheet extends ActorSheet {
   //   super.render(force, options);
   // }
 
+  // set and mutate model of view
+  // async getData() {
+  //   const data = await super.getData();
+  //   logger.logWarn("data", data);
+  //   return data;
+  // }
+
   // register dynamic functionality (buttons, events, and so on)
   async activateListeners(html) {
     super.activateListeners(html);
@@ -38,7 +45,10 @@ export class SimpleLootSheet extends ActorSheet {
       btn.onclick = (event) => {
         const { eventtype: eventType, itemid: itemId } =
           event.currentTarget.dataset;
-        handleEvent(eventType, this.actor, itemId);
+        // gather global itemId
+        const itemKeys = Array.from(this.actor.data.items.keys());
+        const item = this.actor.data.items.get(itemKeys[itemId]);
+        handleEvent(eventType, this.actor, item.id);
       };
     }
   }
