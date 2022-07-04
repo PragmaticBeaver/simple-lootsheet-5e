@@ -18,45 +18,19 @@ export async function handleEvent(eventType, eventOrigin, eventData) {
 
   switch (eventType) {
     case EVENT.loot:
-      // remove item from actor and add to actor associated with player
-      // todo handle DM/GM
       const itemId = eventData;
-      // let item;
-      // item = game.items.get(itemName);
-      // logger.logConsole("item", item);
-      // if (!item) {
-      //   const items = [];
-      //   game.packs.get("dnd5e.items").index.forEach((item) => {
-      //     if (item.name === itemName) {
-      //       items.push(item);
-      //     }
-      //   });
-      //   item = items.length > 0 ? items[0] : undefined;
-      // }
-
-      // logger.logConsole("item", item);
-      // todo spawn instance of item
-      // actor.data.items.set(item._id, item);
-
-      const x = eventOrigin.getEmbeddedDocument("Item", itemId);
-      logger.logWarn("x", x);
-      // const newItem = duplicate(x);
+      // loots a single item in the inventory of eventTarget
+      await lootItem(eventOrigin, eventTarget, itemId);
       break;
     case EVENT.lootAll:
-      if (eventOrigin?.data?.items.length > 0) {
-        return;
-      }
-      const lootableItems = gatherLootableItems(eventOrigin.data.items);
-      logger.logWarn("lootableItems", lootableItems);
-      const { originChanges, targetChanges } = transferItems(
-        eventOrigin,
-        eventTarget,
-        lootableItems
-      );
-      logger.logWarn("changes", originChanges, targetChanges);
-      await updateItems(eventOrigin, eventTarget, originChanges, targetChanges);
+      // loots every item in the inventory of eventTarget
+      await lootAllItems(eventOrigin, eventTarget);
+      break;
+    case EVENT.lootStack:
+      // todo
       break;
     case EVENT.remove:
+      // todo
       break;
     default:
       logger.logWarn(`can't handle event "${eventType}"`);
@@ -65,10 +39,51 @@ export async function handleEvent(eventType, eventOrigin, eventData) {
   }
 }
 
+async function lootItem(eventOrigin, eventTarget, itemId) {
+  if (eventOrigin?.data?.items.length > 0 || !itemId) {
+    logger.logInfo(`can't loot ${itemId} from ${eventOrigin}`);
+    return;
+  }
+  const item = eventOrigin.data.items.get(itemId);
+  if (!item) {
+    logger.logInfo(`${itemId} can not be found`);
+    return;
+  }
+  const lootableItems = gatherLootableItems([item]);
+  if (lootableItems?.length < 1) {
+    logger.logInfo(`${itemId} - ${item} is not lootable`);
+    return;
+  }
+
+  await updateActors(eventOrigin, eventTarget, lootableItems);
+}
+
+async function lootAllItems(eventOrigin, eventTarget) {
+  if (eventOrigin?.data?.items.length > 0) {
+    logger.logInfo(`${eventOrigin}'s inventory is empty`);
+    return;
+  }
+  const lootableItems = gatherLootableItems(eventOrigin.data.items);
+  if (lootableItems?.length < 1) {
+    logger.logInfo(`items are not lootable ${eventOrigin.data.items}`);
+    return;
+  }
+
+  await updateActors(eventOrigin, eventTarget, lootableItems);
+}
+
+async function updateActors(eventOrigin, eventTarget, lootableItems) {
+  const { originChanges, targetChanges } = calculateItemTransferChanges(
+    eventOrigin,
+    eventTarget,
+    lootableItems
+  );
+  await updateItems(eventOrigin, eventTarget, originChanges, targetChanges);
+}
+
 function gatherLootableItems(items) {
   const lootableItems = [];
   for (const item of items) {
-    logger.logWarn("item", item);
     const invalidItemTypes = ["class", "spell", "feat"];
     const invalidItem = invalidItemTypes.includes(item.type);
     if (invalidItem) {
@@ -80,7 +95,7 @@ function gatherLootableItems(items) {
   return lootableItems;
 }
 
-function transferItems(origin, target, items) {
+function calculateItemTransferChanges(origin, target, items) {
   const originChanges = { updatedItems: [], removedItems: [] };
   const targetChanges = { updatedItems: [], addedItems: [] };
 
@@ -98,7 +113,9 @@ function transferItems(origin, target, items) {
     if (targetOwnsItemAlready) {
       const targetUpdate = {
         _id: targetItem.id,
-        data: { quantity: parseInt(targetItem.data.data.quantity + quantity) },
+        data: {
+          quantity: parseInt(targetItem.data.data.quantity + itemQuantity),
+        },
       };
       targetChanges.updatedItems.push(targetUpdate);
     } else {
