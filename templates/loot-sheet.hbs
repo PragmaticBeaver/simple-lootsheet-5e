@@ -53,6 +53,7 @@
               style="background-image: url('{{item.img}}')"
             ></div>
             <h4>{{item.name}}</h4>
+            <h4>{{item.data.data.quantity}}</h4>
             <div class="flexrow">
               <a
                 class="sls-btn"
@@ -62,29 +63,29 @@
               >
                 <i class="fas fa-box"></i>
               </a>
+              <a
+                class="sls-btn"
+                title="Loot Stack"
+                data-eventType="lootStack"
+                data-itemId={{itemId}}
+              >
+                <i class="fas fa-boxes"></i>
+              </a>
+              <a
+                class="sls-btn"
+                title="Remove"
+                data-eventType="remove"
+                data-itemId={{itemId}}
+              >
+                <i class="fas fa-trash"></i>
+              </a>
             </div>
-            <a
-              class="sls-btn"
-              title="Loot Stack"
-              data-eventType="lootStack"
-              data-itemId={{itemId}}
-            >
-              <i class="fas fa-boxes"></i>
-            </a>
-            <a
-              class="sls-btn"
-              title="Remove"
-              data-eventType="remove"
-              data-itemId={{itemId}}
-            >
-              <i class="fas fa-trash"></i>
-            </a>
           </div>
         </li>
       {{/each}}
     </ol>
     <br />
-    <h3>Contains {{actor.items.size}} items.</h3>
+    <h3>Contains unique {{actor.items.size}} items.</h3>
   </section>
 
   <!-- Sheet Footer -->
@@ -96,7 +97,7 @@
       data-itemId={{itemId}}
     >
       <h3>Loot all</h3>
-      <i class="fas fa-boxes"></i>
+      <i class="fas fa-cart-arrow-down"></i>
     </button>
   </footer>
 </form>
