@@ -48,7 +48,7 @@ export class SimpleLootSheet extends ActorSheet {
         // gather global itemId
         const itemKeys = Array.from(this.actor.data.items.keys());
         const item = this.actor.data.items.get(itemKeys[itemId]);
-        await handleEvent(eventType, this.actor, item.id);
+        await handleEvent(eventType, this.actor, item?.id);
       };
     }
   }

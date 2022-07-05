@@ -18,16 +18,16 @@ export async function handleEvent(eventType, eventOrigin, eventData) {
 
   switch (eventType) {
     case EVENT.loot:
-      const itemId = eventData;
-      // loots a single item in the inventory of eventTarget
-      await lootItem(eventOrigin, eventTarget, itemId);
-      break;
-    case EVENT.lootAll:
-      // loots every item in the inventory of eventTarget
-      await lootAllItems(eventOrigin, eventTarget);
+      // loots a single item contained inside  the inventory of eventTarget
+      await lootItem(eventOrigin, eventTarget, eventData);
       break;
     case EVENT.lootStack:
-      // todo
+      // loots a single item stack (every item of the same name) contained inside the inventory of eventTarget
+      await lootStack(eventOrigin, eventTarget, eventData);
+      break;
+    case EVENT.lootAll:
+      // loots every item contained inside  the inventory of eventTarget
+      await lootAllItems(eventOrigin, eventTarget);
       break;
     case EVENT.remove:
       // todo
@@ -44,6 +44,27 @@ async function lootItem(eventOrigin, eventTarget, itemId) {
     logger.logInfo(`can't loot ${itemId} from ${eventOrigin}`);
     return;
   }
+
+  const item = eventOrigin.data.items.get(itemId);
+  if (!item) {
+    logger.logInfo(`${itemId} can not be found`);
+    return;
+  }
+  const lootableItems = gatherLootableItems([item]);
+  if (lootableItems?.length < 1) {
+    logger.logInfo(`${itemId} - ${item} is not lootable`);
+    return;
+  }
+
+  await updateActors(eventOrigin, eventTarget, lootableItems, 1);
+}
+
+async function lootStack(eventOrigin, eventTarget, itemId) {
+  if (eventOrigin?.data?.items.length > 0 || !itemId) {
+    logger.logInfo(`can't loot ${itemId} from ${eventOrigin}`);
+    return;
+  }
+
   const item = eventOrigin.data.items.get(itemId);
   if (!item) {
     logger.logInfo(`${itemId} can not be found`);
@@ -72,11 +93,17 @@ async function lootAllItems(eventOrigin, eventTarget) {
   await updateActors(eventOrigin, eventTarget, lootableItems);
 }
 
-async function updateActors(eventOrigin, eventTarget, lootableItems) {
+async function updateActors(
+  eventOrigin,
+  eventTarget,
+  lootableItems,
+  customQuantity = undefined
+) {
   const { originChanges, targetChanges } = calculateItemTransferChanges(
     eventOrigin,
     eventTarget,
-    lootableItems
+    lootableItems,
+    customQuantity
   );
   await updateItems(eventOrigin, eventTarget, originChanges, targetChanges);
 }
@@ -95,7 +122,12 @@ function gatherLootableItems(items) {
   return lootableItems;
 }
 
-function calculateItemTransferChanges(origin, target, items) {
+function calculateItemTransferChanges(
+  origin,
+  target,
+  items,
+  customQuantity = undefined
+) {
   const originChanges = { updatedItems: [], removedItems: [] };
   const targetChanges = { updatedItems: [], addedItems: [] };
 
@@ -107,7 +139,9 @@ function calculateItemTransferChanges(origin, target, items) {
       // originItem.data?.data?.price === i.data?.data?.price &&
       // originItem.data?.data?.weight === i.data?.data?.weight
     );
-    const itemQuantity = item.data.data.quantity;
+    const itemQuantity = customQuantity
+      ? customQuantity
+      : item.data.data.quantity;
 
     const targetOwnsItemAlready = !!targetItem;
     if (targetOwnsItemAlready) {

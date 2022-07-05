@@ -1,3 +1,8 @@
-/* .sls-btn {
-  background-color: aqua;
-} */
+.sls-btn {
+  align-items: center;
+  justify-content: center;
+}
+
+.item-name .flexrow .sls-loot-input {
+  margin-right: 10px;
+}
